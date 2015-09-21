@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+  <!-- General -->
+  <category label="服务器设置">
+  	<setting id="prefer115server" type="enum" label="115网盘替换线路" values="电信|联通|铁通/移动|长宽" default="0"/>
+	  <setting id="videoquality" type="enum" label="视频播放质量" values="原码|标清|高清|超清|1080P|每次提示" default="0"/>
+	  <setting id="imagequality" type="enum" label="下载图片尺寸" values="高清|原图" default="0"/>
+	  <setting id="filesperpage" type="enum" label="每页文件数量" values="25|50|100|150|200|500|1000|全部文件" default="0"/>
+	  <setting id="fileorderby" type="enum" label="文件排序依据" values="缺省|文件名|文件日期|文件大小" default="0"/>
+	  <setting id="orderasc" type="enum" label="文件排序方式" values="缺省|升序|降序" default="0"/>
+	  <setting id="filtertype" type="enum" label="获取文件类型" values="全部|字幕|图片|音频|视频" default="0"/>
+  </category>
+  <category label="显示与过滤">
+  	<setting id="viewmode" type="enum" label="视图模式" values="自动|列表|图标" default="0"/>
+  	<setting id="loadvideo" type="bool" label="显示视频文件" default="true"/>
+  	<setting id="loadaudio" type="bool" label="显示音频文件" default="true"/>
+	  <setting id="loadimage" type="bool" label="显示图片文件" default="true"/>
+	  <setting id="loadsubtitle" type="bool" label="显示字幕文件" default="true"/>
+	   <setting id="loadotherfiles" type="bool" label="显示其它文件" default="true"/>
+  </category>
+</settings>
