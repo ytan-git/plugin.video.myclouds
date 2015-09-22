@@ -20,14 +20,42 @@ class QRShower(xbmcgui.WindowDialog):
 
     def showQR(self, url):
         self.imgControl.setImage(url)
-        self.doModal()
-        #self.setFocus(self.imgControl)
+        self.show()
+        #self.doModal()
 
     def changeLabel(self, label):
         self.labelControl.setLabel(label)
         
     def onAction(self,action):
         self.close()
+
+##class QRShowerOdd(object):
+##    def __init__(self, windowid):
+##        self.showing = False
+##        self.window = xbmcgui.Window(windowid)
+##        self.imgControl = xbmcgui.ControlImage((1280-218)/2, (720-218)/2, 218, 218, filename = '')
+##        self.labelControl = xbmcgui.ControlLabel((1280-300)/2, (720+218)/2 + 10, 300, 10, '请用115手机客户端扫描二维码', alignment = 0x00000002)
+##
+##    def showQR(self, qrurl):
+##        self.showing = True
+##        self.imgControl.setImage(qrurl)
+##        self.window.addControl(self.imgControl)
+##        self.window.addControl(self.labelControl)
+##        self.window.setFocus(self.imgControl)
+##
+##    def hide(self):
+##        self.showing = False
+##        self.window.removeControl(self.imgControl)
+##        self.window.removeControl(self.labelControl)
+##
+##    def changeLabel(self, label):
+##        if self.showing == True:
+##            self.labelControl.setLabel(label)
+##
+##    def close(self):
+##        if self.showing == True:
+##            self.hide()
+        
     
 class Cloud115(object):
     name = 'Cloud115'
@@ -35,7 +63,7 @@ class Cloud115(object):
     can_do_password_login = False
     can_do_search = True
     user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:38.0) Gecko/20100101 Firefox/38.0'
-    bad_servers = ['fscdnuni-vip.115.com', 'fscdntel-vip.115.com']
+    bad_servers = ['fscdnuni-vip.115.com', 'fscdntel-vip.115.com', 'fscdnuni.115.com', 'fscdntel.115.com']
     def __init__(self, cookiefile, username):
         self.prefer_server = get_prefer_server(__addon__.getSetting('prefer115server'))
         self.max_server_files_per_page = 200
@@ -93,28 +121,31 @@ class Cloud115(object):
         data = self.fetch(data)
         data = json.loads(data[data.index('{'):])
         uid = data['uid']
-        data = self.urlopen('http://msg.115.com/proapi/anonymous.php?ac=signin&user_id='+uid+'&sign='+data['sign']+'&time='+str(data['time'])+'&_='+str(time.time()))
-            
+        
+        data = self.urlopen('http://msg.115.com/proapi/anonymous.php?ac=signin&user_id='+uid+'&sign='+data['sign']+'&time='+str(data['time'])+'&_='+str(time.time()))    
         data = self.fetch(data)
         data = json.loads(data[data.index('{'):])
         imserver = data['server']
         sessionid = data['session_id']
 
         qrurl = 'http://www.115.com/scan/?ct=scan&ac=qrcode&uid='+uid+'&_t='+str(time.time())
+        #current_window = xbmc.executeJSONRPC('{"jsonrpc":"2.0", "id":1, "method":"GUI.GetProperties", "params":{"properties":["currentwindow"]}}')
+        #window_id = json.loads(current_window)['result']['currentwindow']['id']
+        #qrShower = QRShower(window_id)
         qrShower = QRShower()
-        qthread = threading.Thread(target=qrShower.showQR, args=(qrurl,))
-        qthread.start()
+        qrShower.showQR(qrurl)
+        #qthread = threading.Thread(target=qrShower.showQR, args=(qrurl,))
+        #qthread.start()
 
         for i in range(2):
             try:
                 data = self.urlopen('http://' + imserver +'/chat/r?VER=2&c=b0&s='+sessionid+'&_t='+str(time.time()))
             except Exception, e:
                 qrShower.close()
-                qthread.join()
+                #qthread.join()
                 return {'state':False, 'message':'手机客户端扫描超时'}
             data = self.fetch(data)
             data = data.replace('\n','').replace('\r','')
-            #ll = eval(data)
             ll = json.loads(data[data.index('[{'):])
             for l in ll:
                 for p in l['p']:
@@ -134,7 +165,7 @@ class Cloud115(object):
         data = self.fetch(data)
         data = json.loads(data[data.index('{'):])
         qrShower.close()
-        qthread.join()
+        #qthread.join()
 
         if data['state'] != True:
             return {'state':False, 'message':data['msg']}
@@ -153,8 +184,8 @@ class Cloud115(object):
                                  'login[ssoln]':user, 'login[ssopw]':self.depass(user,passwd,vcode),'login[ssovcode]':vcode,
                                  'login[safe]':'1','login[time]':'1','login[safe_login]':'1','goto':'http://m.115.com/?ac=home'})
         self.cookiejar.clear()
-        #login_page = self.urlopen('http://passport.115.com/?ct=login&ac=ajax&is_ssl=1', data=data)
-        login_page = self.urlopen('http://passport.115.com/?ct=open_login&t=qq', data=data)
+        login_page = self.urlopen('http://passport.115.com/?ct=login&ac=ajax&is_ssl=1', data=data)
+        #login_page = self.urlopen('http://passport.115.com/?ct=open_login&t=qq', data=data)
         msgs=json.loads(self.fetch(login_page))
         if msgs['state']==True:
             self.cookiejar.save(self.cookiefile, ignore_discard=True)
@@ -182,7 +213,6 @@ class Cloud115(object):
         while True:
             data = self.get_data_from_server(searchstr, cid, filter_type, get_file_order_by(file_order), order_asc, str(server_offset), server_files_per_page)
             if data['state'] != True:
-                #notify(msg='数据获取失败,错误信息:'+str(data['error']))
                 return {'state':False, 'message':str(data['error'])}
             items.extend(data['data'])
             if data['count'] <= int(server_offset) + server_files_per_page:
@@ -221,7 +251,6 @@ class Cloud115(object):
         result = ''
         if data['state']:
             result = data['file_url']
-            #return data['file_url'].replace(self.bad_server, self.prefer_server)
         else:
             data=self.urlopen("http://proapi.115.com/app/chrome/down?method=get_file_url&pickcode="+pc)
             data=self.fetch(data)
@@ -231,16 +260,15 @@ class Cloud115(object):
                     if value.has_key('url'):
                         result = value['url']['url']
                         break
-                    #return value['url']['url'].replace(self.bad_server, self.prefer_server)
-                #return data['file_url']
             else:
-                #notify('get file error:' + data['msg'])
                 return ''
         for bs in self.bad_servers:
             if result.find(bs) != -1:
                 bad_server = bs
                 break
         if bad_server != '':
+            if bad_server.find('-vip') == -1:
+                self.prefer_server = self.prefer_server.replace('vip', '')
             result = result.replace(bad_server, self.prefer_server)
         return result
 
