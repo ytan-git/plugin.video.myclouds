@@ -117,7 +117,8 @@ class CloudBaidu(object):
         if api is None:
             return ''
         info = api.get_filemetas(pc)['info']
-        return info[0]['dlink'] + '|User-Agent=AppleCoreMedia/1.0.0.9B206 (iPad; U; CPU OS 5_1_1 like Mac OS X; zh_cn)'
+        return info[0]['dlink'] + '|User-Agent=netdisk;5.3.6.0;PC;PC-Windows;6.2.9200;WindowsBaiduYunGuanJia'
+        #return info[0]['dlink'] + '|User-Agent=AppleCoreMedia/1.0.0.9B206 (iPad; U; CPU OS 5_1_1 like Mac OS X; zh_cn)'
         #return pc + '|User-Agent=Mozilla/5.0%20%28Windows%20NT%206.1%3B%20rv%3A25.0%29%20Gecko/20100101%20Firefox/25.0&Referer=http%3A//pan.baidu.com/disk/home'
 
 def _get_public_key(storage, forceGetCert = False):
